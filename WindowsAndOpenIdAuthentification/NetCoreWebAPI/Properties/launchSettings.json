@@ -1,9 +1,9 @@
 {
   "iisSettings": {
-    "windowsAuthentication": true,
-    "anonymousAuthentication": true,
+    "windowsAuthentication": false,
+    "anonymousAuthentication": false,
     "iis": {
-      "applicationUrl": "http://localhost/NetCoreWebAPI",
+      "applicationUrl": "http://localhost:84/",
       "sslPort": 0
     },
     "iisExpress": {
