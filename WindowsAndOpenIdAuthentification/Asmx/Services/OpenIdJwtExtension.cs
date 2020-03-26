@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Threading;
-using System.Web;
 using Asmx.Models;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -15,30 +11,32 @@ namespace Asmx.Services
 {
     public class OpenIdJwtExtension
     {
-        public ClaimsPrincipal ValidateTokenAsync(string jwtToken, Config config)
+        public static ClaimsPrincipal ValidateToken(string jwtToken, ApiConfiguration config)
         {
+            ClaimsPrincipal result = null;
+
             if (string.IsNullOrWhiteSpace(jwtToken))
             {
-                return null;
+                return result;
             }
 
             var splitToken = jwtToken.Split(' ');
 
             if (splitToken.Length < 2)
             {
-                return null;
+                return result;
             }
 
             var value = new AuthenticationHeaderValue(splitToken[0], splitToken[1]);
 
             if (value?.Scheme != "Bearer")
             {
-                return null;
+                return result;
             }
 
-            var validationParameter = ConfigureAuthentication(new AuthenticationModel(config.Authority, config.ValidAudience));
-
-            ClaimsPrincipal result = null;
+            // We are considering cloud to on-premises connect scenarios. Due to this fact, ValidAudience does not make sense.
+            // The ValidAudience and ClientId in the token will be the same and equal to ClientId.
+            var validationParameter = ConfigureAuthentication(config.Authority, config.ClientId);
 
             try
             {
@@ -61,9 +59,9 @@ namespace Asmx.Services
             return result;
         }
 
-        private TokenValidationParameters ConfigureAuthentication(AuthenticationModel model)
+        private static TokenValidationParameters ConfigureAuthentication(string authority, string validAudience)
         {
-            var openIdConnectMetadataAddress = $"{model.Authority}/.well-known/openid-configuration";
+            var openIdConnectMetadataAddress = $"{authority}/.well-known/openid-configuration";
 
             var configurationManager =
                 new ConfigurationManager<OpenIdConnectConfiguration>(
@@ -84,7 +82,7 @@ namespace Asmx.Services
                 ValidateLifetime = true,
 
                 ValidateAudience = true,
-                ValidAudience = model.ValidAudience,
+                ValidAudience = validAudience,
             };
 
             return tokenValidationParameters;

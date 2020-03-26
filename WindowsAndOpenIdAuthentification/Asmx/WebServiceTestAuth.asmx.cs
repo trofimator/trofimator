@@ -1,4 +1,5 @@
 ﻿using System.Web.Services;
+using Asmx.Models;
 using Asmx.Services;
 
 namespace Asmx
@@ -19,7 +20,10 @@ namespace Asmx
         {
             string token = this.Context.Request.Headers[Headers.Authorization];
 
-            if (Context.User.Identity.IsAuthenticated || (token != null && new OpenIdJwtExtension().ValidateTokenAsync(token, ConfigurationService.ReadConfig()) != null))
+            // Context.User.Identity.IsAuthenticated is true when only Windows authentification is set in the IIS and a user from active directory tries to get access.
+            // When anonimus authentification is added in addition to windows authentification
+            // Context.User.Identity.IsAuthenticated is always false not depending on the user.
+            if (Context.User.Identity.IsAuthenticated || OpenIdJwtExtension.ValidateToken(token, ConfigurationService.ReadConfig()) != null)
             {
                 return "Hello World";
             }
