@@ -51,7 +51,7 @@ namespace Asmx.Services
                     result = claimsPrincipal;
                 }
             }
-            catch (SecurityTokenException)
+            catch (SecurityTokenException ex)
             {
                 result = null;
             }
